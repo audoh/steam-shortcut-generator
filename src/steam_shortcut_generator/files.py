@@ -26,6 +26,10 @@ def get_steam_user_id() -> str:
     return user.name
 
 
+def get_app_info() -> Path:
+    return get_steam_root() / "appcache/appinfo.vdf"
+
+
 def get_share_dir() -> Path:
     return Path.home() / ".local/share"
 
