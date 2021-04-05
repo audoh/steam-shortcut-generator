@@ -29,11 +29,11 @@ def read_key_uint32(data: bytes, key: bytes, pos: int = 0) -> Tuple[int, int]:
     return read_uint32(data, pos)
 
 
-def read_key_utf8(data: bytes, key: bytes, pos: int = 0) -> str:
+def read_key_utf8(data: bytes, key: bytes, pos: int = 0) -> Tuple[str, int]:
     idx = data.index(key, pos)
     start = idx + len(key)
     end = data.index(b"\0", start)
-    return data[start:end].decode("utf-8")
+    return data[start:end].decode("utf-8"), end
 
 
 def read(data: bytes) -> Dict[str, App]:
@@ -48,12 +48,12 @@ def read(data: bytes) -> Dict[str, App]:
         app = App(id=id)
 
         try:
-            app.name = read_key_utf8(data, key=_FIELD_NAME, pos=pos)
+            app.name, _ = read_key_utf8(data, key=_FIELD_NAME, pos=pos)
         except ValueError:
             pass
 
         try:
-            app.icon_hash = read_key_utf8(data, key=_FIELD_CLIENT_ICON, pos=pos)
+            app.icon_hash, _ = read_key_utf8(data, key=_FIELD_CLIENT_ICON, pos=pos)
         except ValueError:
             pass
 
