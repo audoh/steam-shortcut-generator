@@ -24,6 +24,7 @@ class App:
 
 
 def read_key_value(data: bytes, key: bytes, pos: int) -> str:
+    key = b"\x01" + key
     idx = data.index(key, pos)
     start = idx + len(key) + 1
     end = data.index(b"\0", start)
