@@ -23,8 +23,13 @@ class App:
     icon_hash: Optional[str] = None
 
 
-def read_key_value(data: bytes, key: bytes, pos: int) -> str:
-    key = key
+def read_key_uint32(data: bytes, key: bytes, pos: int = 0) -> Tuple[int, int]:
+    idx = data.index(key, pos)
+    pos = idx + len(key)
+    return read_uint32(data, pos)
+
+
+def read_key_utf8(data: bytes, key: bytes, pos: int = 0) -> str:
     idx = data.index(key, pos)
     start = idx + len(key)
     end = data.index(b"\0", start)
@@ -33,28 +38,27 @@ def read_key_value(data: bytes, key: bytes, pos: int) -> str:
 
 def read(data: bytes) -> Dict[str, App]:
     res: Dict[str, App] = {}
-    idx = data.find(_FIELD_APP_ID)
-    while idx != -1:
-        # Skip 'appid' and null terminator
-        pos = idx + len(_FIELD_APP_ID)
-        # Read app id
-        id, _ = read_uint32(data, pos)
+    pos = 0
+    while True:
+        try:
+            id, pos = read_key_uint32(data, _FIELD_APP_ID, pos=pos)
+        except Exception:
+            break
+
         app = App(id=id)
 
         try:
-            app.name = read_key_value(data, key=_FIELD_NAME, pos=idx + 1)
+            app.name = read_key_utf8(data, key=_FIELD_NAME, pos=pos)
         except ValueError:
             pass
 
         try:
-            app.icon_hash = read_key_value(data, key=_FIELD_CLIENT_ICON, pos=idx + 1)
+            app.icon_hash = read_key_utf8(data, key=_FIELD_CLIENT_ICON, pos=pos)
         except ValueError:
             pass
 
         if str(id) not in res:
             res[str(id)] = app
-
-        idx = data.find(_FIELD_APP_ID, idx + 1)
     return res
 
 
