@@ -1,14 +1,18 @@
 from os import makedirs
-from pathlib import Path
 from sys import stderr
 
+import requests
+
+from .app_info import read as read_app_info
 from .app_list import get_app_name
 from .desktop import DesktopFile, DesktopParser, EntryType
-from .files import iter_game_ids
+from .files import get_app_info, get_shortcut_dir, iter_game_ids
+from .icons import store_icon
 from .slug import slugify
 
 if __name__ == "__main__":
-    outputdir = Path("./test")
+    outputdir = get_shortcut_dir()
+    app_info = read_app_info(get_app_info().open("rb").read())
 
     makedirs(outputdir, exist_ok=True)
     for game_id in iter_game_ids():
@@ -30,6 +34,20 @@ if __name__ == "__main__":
                 parser.write(fp)
         except Exception as exc:
             print(
-                f"warning: failed to generate shortcut for appid={game_id}: {exc}",
+                f"error: failed to generate shortcut for appid={game_id}: {exc}",
                 file=stderr,
             )
+        else:
+            if game_id in app_info:
+                try:
+                    app = app_info[game_id]
+                    if app.icon_hash:
+                        icon_url = f"https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{game_id}/{app.icon_hash}.ico"
+                        print(f"downloading icon from {icon_url}", file=stderr)
+                        res = requests.get(icon_url)
+                        store_icon(game_id, res.content)
+                except Exception as exc:
+                    print(
+                        f"error: failed to store icon for appid={game_id} ({name=}): {exc}",
+                        file=stderr,
+                    )

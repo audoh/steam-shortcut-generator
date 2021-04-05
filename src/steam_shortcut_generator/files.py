@@ -65,5 +65,9 @@ def get_shortcut_dir() -> Path:
     return get_share_dir() / "applications/steam"
 
 
+def get_icon_dir() -> Path:
+    return get_share_dir() / "icons/hicolor"
+
+
 if __name__ == "__main__":
     print(list(iter_game_ids()))
