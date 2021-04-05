@@ -1,4 +1,5 @@
-from os import makedirs
+import stat
+from os import chmod, makedirs
 from sys import stderr
 
 import requests
@@ -30,6 +31,14 @@ if __name__ == "__main__":
             path = outputdir / f"{slugify(name)}.desktop"
             parser = DesktopParser()
             desktop_file.set_config(parser)
+            chmod(
+                path,
+                stat.S_IRWXU
+                | stat.S_IRGRP
+                | stat.S_IXGRP
+                | stat.S_IROTH
+                | stat.S_IXOTH,
+            )
             with open(path, "w") as fp:
                 parser.write(fp)
         except Exception as exc:
