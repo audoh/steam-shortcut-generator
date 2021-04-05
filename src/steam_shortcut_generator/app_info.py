@@ -11,9 +11,9 @@ def read_uint32(data: bytes, pos: int = 0) -> Tuple[int, int]:
     return int.from_bytes(_bytes, byteorder="little", signed=False), pos
 
 
-_FIELD_APP_ID = b"appid"
-_FIELD_CLIENT_ICON = b"clienticon"
-_FIELD_NAME = b"name"
+_FIELD_APP_ID = b"\x02appid\x00"
+_FIELD_CLIENT_ICON = b"\x01clienticon\x00"
+_FIELD_NAME = b"\x01name\x00"
 
 
 @dataclass
@@ -24,9 +24,9 @@ class App:
 
 
 def read_key_value(data: bytes, key: bytes, pos: int) -> str:
-    key = b"\x01" + key
+    key = key
     idx = data.index(key, pos)
-    start = idx + len(key) + 1
+    start = idx + len(key)
     end = data.index(b"\0", start)
     return data[start:end].decode("utf-8")
 
@@ -36,7 +36,7 @@ def read(data: bytes) -> Dict[str, App]:
     idx = data.find(_FIELD_APP_ID)
     while idx != -1:
         # Skip 'appid' and null terminator
-        pos = idx + len(_FIELD_APP_ID) + 1
+        pos = idx + len(_FIELD_APP_ID)
         # Read app id
         id, _ = read_uint32(data, pos)
         app = App(id=id)
