@@ -36,7 +36,7 @@ def _refetch() -> Dict[str, str]:
 
     # Convert to mapping
     _list = _read_applist(_json)
-    _dict = {app["appid"]: app["name"] for app in _list}
+    _dict = {str(app["appid"]): app["name"] for app in _list}
 
     # Cache in memory and FS
     makedirs(_CACHE_PATH.parent.absolute(), exist_ok=True)
@@ -71,12 +71,15 @@ def _ensure_latest_fetched() -> None:
 
 
 def get_app_name(id: str) -> str:
+    id = str(id)
     _ensure_cache_read()
 
     if _MEM_MAP is None or id not in _MEM_MAP:
         _ensure_latest_fetched()
 
-    if _MEM_MAP is None or id not in _MEM_MAP:
+    if _MEM_MAP is None:
+        raise FileNotFoundError(f"no mem map")
+    if id not in _MEM_MAP:
         raise NoKnownAppError(f"no known app with {id=}")
 
     return _MEM_MAP[id]
