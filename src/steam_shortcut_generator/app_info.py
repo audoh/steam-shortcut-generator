@@ -41,7 +41,7 @@ def read(data: bytes) -> Dict[str, App]:
     while True:
         try:
             id, pos = _read_key_uint32(data, _FIELD_APP_ID, pos=pos)
-        except Exception:
+        except ValueError:
             break
 
         app = App(id=id)
