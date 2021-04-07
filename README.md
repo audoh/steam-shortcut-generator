@@ -1,4 +1,3 @@
-# Steam shortcut generator
 Generates a `.desktop` file complete with icon and places it in `~/.local/share/applications/steam` for each installed Steam game.
 
 Will only work if:
